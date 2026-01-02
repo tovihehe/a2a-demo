@@ -1,0 +1,5 @@
+google-adk
+google-genai
+a2a-sdk
+uvicorn
+python-dotenv

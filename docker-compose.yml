@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  trending-agent:
+    build:
+      context: ./trending-agent
+      dockerfile: Dockerfile
+    ports:
+      - "10020:10020"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - PORT=10020
+      - AGENT_ENDPOINT_URL=http://trending-agent:10020 
+    networks:
+      - a2a-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10020/.well-known/agent.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  analyzer-agent:
+    build:
+      context: ./analyzer-agent
+      dockerfile: Dockerfile
+    ports:
+      - "10021:10021"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - PORT=10021
+      - AGENT_ENDPOINT_URL=http://analyzer-agent:10021  
+    networks:
+      - a2a-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10021/.well-known/agent.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  host-agent:
+    build:
+      context: ./host-agent
+      dockerfile: Dockerfile
+    ports:
+      - "10022:10022"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - PORT=10022
+      - TRENDING_AGENT_URL=http://trending-agent:10020
+      - ANALYZER_AGENT_URL=http://analyzer-agent:10021
+      - AGENT_ENDPOINT_URL=http://host-agent:10022  
+    networks:
+      - a2a-network
+    depends_on:
+      trending-agent:
+        condition: service_healthy
+      analyzer-agent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10022/.well-known/agent.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  a2a-network:
+    driver: bridge

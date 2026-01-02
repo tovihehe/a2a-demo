@@ -1,0 +1,10 @@
+google-adk
+google-genai
+a2a-sdk
+uvicorn
+python-dotenv
+pyyaml
+httpx
+langgraph
+google-adk
+langchain_google_genai
